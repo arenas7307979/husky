@@ -62,19 +62,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <camera>
           <horizontal_fov>${60.0*M_PI/180.0}</horizontal_fov>
           <image>
-            <format>R8G8B8</format>
+            <format>B8G8R8</format>
             <width>640</width>
             <height>480</height>
           </image>
           <clip>
             <near>0.05</near>
-            <far>8.0</far>
+            <far>15.0</far>
           </clip>
         </camera>
         <plugin name="kinect_${prefix}_controller" filename="libgazebo_ros_openni_kinect.so">
           <cameraName>${prefix}</cameraName>
           <alwaysOn>true</alwaysOn>
-          <updateRate>10</updateRate>
+          <updateRate>20</updateRate>
           <imageTopicName>rgb/image_raw</imageTopicName>
           <depthImageTopicName>depth/image_raw</depthImageTopicName>
           <pointCloudTopicName>depth/points</pointCloudTopicName>
@@ -87,7 +87,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           <distortion_k3>0.0</distortion_k3>
           <distortion_t1>0.0</distortion_t1>
           <distortion_t2>0.0</distortion_t2>
-          <pointCloudCutoff>0.4</pointCloudCutoff>
+          <pointCloudCutoff>0.05</pointCloudCutoff>
           <robotNamespace>${robot_namespace}</robotNamespace>
         </plugin>
       </sensor>

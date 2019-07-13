@@ -30,8 +30,12 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <xacro:arg name="laser_rpy" default="$(optenv HUSKY_LMS1XX_RPY 0.0 0.0 0.0)" />
 
   <xacro:arg name="kinect_enabled" default="false" />
-  <xacro:arg name="kinect_xyz" default="$(optenv HUSKY_KINECT_XYZ 0 0 0)" />
+  <xacro:arg name="kinect_xyz" default="$(optenv HUSKY_KINECT_XYZ -0.2206 0.0 0.85635)" />
   <xacro:arg name="kinect_rpy" default="$(optenv HUSKY_KINECT_RPY 0 0.18 3.14)" />
+
+  <xacro:arg name="stereo_enabled" default="true" />
+  <xacro:arg name="stereo_xyz" default="$(optenv HUSKY_KINECT_XYZ -0.2206 0.0 0.45635)" />
+  <xacro:arg name="stereo_rpy" default="$(optenv HUSKY_KINECT_RPY 0 0.18 3.14)" />
 
   <xacro:property name="husky_front_bumper_extend" value="$(optenv HUSKY_FRONT_BUMPER_EXTEND 0)" />
   <xacro:property name="husky_rear_bumper_extend" value="$(optenv HUSKY_REAR_BUMPER_EXTEND 0)" />
@@ -46,6 +50,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <xacro:include filename="$(find husky_description)/urdf/accessories/kinect_camera.urdf.xacro"/>
   <xacro:include filename="$(find husky_description)/urdf/accessories/sick_lms1xx_mount.urdf.xacro"/>
   <xacro:include filename="$(find husky_description)/urdf/accessories/sensor_arch.urdf.xacro"/>
+  <xacro:include filename="$(find husky_description)/urdf/accessories/generic_stereo_camera.urdf.xacro"/>
 
   <xacro:property name="M_PI" value="3.14159"/>
 
@@ -113,7 +118,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <!-- Can be modified with environment variables in /etc/ros/setup.bash -->
   <link name="imu_link"/>
   <joint name="imu_joint" type="fixed">
-    <origin xyz="$(optenv HUSKY_IMU_XYZ 0.19 0 0.149)" rpy="$(optenv HUSKY_IMU_RPY 0 -1.5708 3.1416)" />
+    <origin xyz="$(optenv HUSKY_IMU_XYZ 0 0 0)" rpy="$(optenv HUSKY_IMU_RPY 0 0 0)" />
     <parent link="base_link" />
     <child link="imu_link" />
   </joint>
@@ -152,17 +157,20 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 
   <xacro:if value="$(arg kinect_enabled)">
 
-    <xacro:sensor_arch prefix="" parent="top_plate_link">
-      <origin xyz="0.15 0 0.51" rpy="0 0 3.14"/>
-    </xacro:sensor_arch>
     <joint name="kinect_frame_joint" type="fixed">
       <origin xyz="$(arg kinect_xyz)" rpy="$(arg kinect_rpy)" />
-      <parent link="sensor_arch_mount_link"/>
+      <parent link="base_link"/>
       <child link="camera_link"/>
     </joint>
 
     <xacro:kinect_camera prefix="camera" robot_namespace="$(arg robot_namespace)"/>
   </xacro:if>
+
+ <xacro:if value="$(arg stereo_enabled)">
+   <xacro:generic_stereo_camera name="stereo_camera" parent="base_link" ros_topic="stereo_image_raw" cam_info_topic="stereo_camera_info" update_rate="20.0" res_x="752" res_y="480" image_format="L8" hfov="80.0" baseline="0.11">
+   <origin xyz="$(arg stereo_xyz)" rpy="$(arg stereo_rpy)" />
+   </xacro:generic_stereo_camera>
+ </xacro:if>
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
@@ -176,12 +184,14 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
       <updateRate>200.0</updateRate>
       <bodyName>base_link</bodyName>
       <topicName>imu/data</topicName>
-      <accelDrift>0.005 0.005 0.005</accelDrift>
-      <accelGaussianNoise>0.005 0.005 0.005</accelGaussianNoise>
-      <rateDrift>0.005 0.005 0.005 </rateDrift>
-      <rateGaussianNoise>0.005 0.005 0.005 </rateGaussianNoise>
-      <headingDrift>0.005</headingDrift>
-      <headingGaussianNoise>0.005</headingGaussianNoise>
+      <rpyOffset>0 0 0</rpyOffset> <!-- deprecated -->
+      <gaussianNoise>0</gaussianNoise>  <!-- deprecated -->
+      <accelDrift>0.1 0.1 0.1</accelDrift>
+      <accelGaussianNoise>0.35 0.35 0.3</accelGaussianNoise>
+      <rateDrift>0.1 0.1 0.1</rateDrift>
+      <rateGaussianNoise>0.05 0.05 0.015</rateGaussianNoise>
+<!--       <headingDrift>0.005</headingDrift>
+      <headingGaussianNoise>0.005</headingGaussianNoise>-->
     </plugin>
   </gazebo>
 
